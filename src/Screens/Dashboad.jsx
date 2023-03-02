@@ -9,8 +9,8 @@ import axios from "axios";
 
 import Banner1 from "../assets/banner1.jpg";
 import Banner3 from "../assets/banner3.jpg";
-import Banner4 from "../assets/banner4.jpg";
-import Banner6 from "../assets/banner6.jpg";
+import Banner4 from "../assets/Banner4.jpg";
+import Banner6 from "../assets/Banner6.jpg";
 import video1 from "../assets/videopinkvote.mp4";
 import partner1 from "../assets/coinboom.png";
 import partner2 from "../assets/allpresale.png";
