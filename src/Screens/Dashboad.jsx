@@ -291,7 +291,7 @@ const Dashboad = () => {
     setRecaptchaKey(Date.now());
   };
 
-  const handleVote = async () => {onst token = captchaRef.current.getValue();
+  const handleVote = async () => {const token = captchaRef.current.getValue();
 
         if (token) {
             let valid_token = await verifyToken(token);
