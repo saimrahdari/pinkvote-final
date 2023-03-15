@@ -18,6 +18,7 @@ const Airdrops = () => {
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [recaptchaKey, setRecaptchaKey] = useState(Date.now());
   const captchaRef = useRef(null)
+  const [hourError, setHourError] = useState(false);
 
 
   useEffect(() => {
@@ -63,15 +64,28 @@ const Airdrops = () => {
 
   const handleVote = async () => {
     const token = captchaRef.current.getValue();
-
+   
     if (token) {
-      let valid_token = await verifyToken(token);
-      if (valid_token.success) {
-        update(ref(db, `/airdrops/${clickedAirdrop.key}`), {
-          votes: clickedAirdrop.airdrop.votes + 1,
-        })
-        setShowModal(false)
-      }
+      
+      
+            let valid_token = await verifyToken(token);
+            const res = await axios.get('https://geolocation-db.com/json/')
+            console.log(res.data.IPv4);
+            try {
+                const response = await axios.get(`https://pinkvote-backend.herokuapp.com/verifyIp/${res.data.IPv4}`);
+                console.log(response.data.success);
+                if (valid_token.success && response.data.success) {
+                    update(ref(db, `/airdrops/${clickedAirdrop.key}`), {
+                      votes: clickedAirdrop.airdrop.votes + 1,
+                    })
+                    setShowModal(false)
+                }else{
+                    setHourError(true)
+                }
+              } catch (error) {
+                console.log(error);
+              }
+          
     }
   }
 
@@ -163,46 +177,53 @@ const Airdrops = () => {
         </table>
       </div>
 
-      {showModal ? (
-        <>
-          <div
-            className="z-[30000000] justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 outline-none focus:outline-none"
-          >
-            <div className="bg-primary text-white relative my-6 mx-auto w-[50%]">
-              {/*content*/}
-              <div className={` border-0 rounded-lg shadow-lg relative flex flex-col w-full outline-none focus:outline-none`}>
-                {/*header*/}
-                <div className="flex  items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
-                  <h3 className=" text-2xl font-semibold text-center">
-                    {clickedAirdrop.airdrop.name}
-                  </h3>
-                  <button
-                    className="text-primary p-1 ml-auto bg-transparent border-0 text-3xl leading-none font-semibold outline-none focus:outline-none"
-                    onClick={handleModalClose}
-                  >
-                    <span className="bg-transparent text-white h-6 w-6 text-2xl block outline-none focus:outline-none">
-                      X
-                    </span>
-                  </button>
-                </div>
-                {/*body*/}
-                <div className="relative p-6 flex w-full flex-col">
-                  <p className='mb-[40px]'>Total Votes: {clickedAirdrop.airdrop.votes}</p>
+      {showModal ? 
+        
+        (
+                <>
+                    <div
+                        className="z-[30000000] justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 outline-none focus:outline-none"
+                    >
+                        <div className="bg-primary text-white relative my-6 mx-auto w-[50%]">
+                            {/*content*/}
+                            <div className={` border-0 rounded-lg shadow-lg relative flex flex-col w-full outline-none focus:outline-none`}>
+                                {/*header*/}
+                                <div className={`${hourError ? "block" : "hidden"} w-full bg-green-300 my-[8px] py-[20px] px-[8px]`}>
+                                    <p>Thank you for voting! +2 votes :) come back in an hour</p>
+                                </div> 
+                                <div className="flex  items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
+                                    <h3 className=" text-2xl font-semibold text-center">
+                                        {clickedAirdrop.airdrop.name}
+                                    </h3>
+                                    <button
+                                        className="text-primary p-1 ml-auto bg-transparent border-0 text-3xl leading-none font-semibold outline-none focus:outline-none"
+                                        onClick={handleModalClose}
+                                    >
+                                        <span className="bg-transparent text-white h-6 w-6 text-2xl block outline-none focus:outline-none">
+                                            X
+                                        </span>
+                                    </button>
+                                </div>
+                                {/*body*/}
+                                <div className="relative p-6 flex w-full flex-col">
+                                    <p className='mb-[40px]'>Total Votes:{clickedAirdrop.airdrop.votes}</p>
 
-                  <ReCAPTCHA className='self-center' sitekey={import.meta.env.VITE_REACT_APP_SITE_KEY} ref={captchaRef} key={recaptchaKey} onChange={setRecaptchaToken} />
-                </div>
-                {/*footer*/}
-                <div className="flex items-center justify-center p-6 border-t border-solid border-slate-200 rounded-b">
-                  <button onClick={handleVote} className='border border-white py-[6px] px-[50px] bg-primary text-[15px] h-[35px] whitespace-nowrap align-middle rounded-[4px] hover:text-primary hover:bg-white'>
-                    Vote
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
-        </>
-      ) : null}
+                                    <ReCAPTCHA className='self-center' sitekey={import.meta.env.VITE_REACT_APP_SITE_KEY} ref={captchaRef} key={recaptchaKey} onChange={setRecaptchaToken} />
+                                </div>
+                                {/*footer*/}
+                                <div className="flex items-center justify-center p-6 border-t border-solid border-slate-200 rounded-b">
+                                    <button onClick={handleVote} className='border border-white py-[6px] px-[50px] bg-primary text-[15px] h-[35px] whitespace-nowrap align-middle rounded-[4px] hover:text-primary hover:bg-white'>
+                                        Vote
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
+                </>)
+        
+        
+         : null}
     </div>
   )
 }
